@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 	"go_crud/pkg/container"
 	"go_crud/pkg/member"
 	"go_crud/pkg/mysql"
@@ -26,17 +27,22 @@ func main() {
 		Router: mux.NewRouter(),
 	}
 
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:3000"},
+		AllowCredentials: true,
+	})
+
 	mysql.Configure(app)
 	tweet.LoadRoutes(app)
 	member.LoadRoutes(app)
 
 	go func() {
-		if err := http.ListenAndServe(":8010", app.Router); err != nil {
+		if err := http.ListenAndServe(":8011", c.Handler(app.Router)); err != nil {
 			log.Println(fmt.Errorf("Error serving the app: %w", err))
 		}
 	}()
 
-	fmt.Println("Server listen on localhost:8010")
+	fmt.Println("Server listen on localhost:8011")
 	<-shutdownSignal
 	_, cancel := context.WithCancel(ctx)
 	defer cancel()
