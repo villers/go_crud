@@ -13,7 +13,7 @@ import (
 func GetTweets(app *container.Container) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var tweets []models.Tweets
-		app.DB.Find(&tweets)
+		app.DB.Preload("Member").Find(&tweets)
 
 		pkg.RespondWithJSON(w, http.StatusOK, tweets)
 	}
@@ -24,7 +24,7 @@ func GetTweet(app *container.Container) http.HandlerFunc {
 		vars := mux.Vars(r)
 		var tweets models.Tweets
 
-		if app.DB.First(&tweets, vars["id"]).RecordNotFound() {
+		if app.DB.Preload("Member").First(&tweets, vars["id"]).RecordNotFound() {
 			pkg.RespondWithError(w, http.StatusNotFound, "Not Found")
 			return
 		}
